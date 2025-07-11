@@ -1,53 +1,62 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="진안군 목조전망대 445억원 혈세낭비를 막기 위한 시민 캠페인">
     <meta name="keywords" content="진안군, 목조전망대, 혈세낭비, 시민캠페인, 서명운동">
     <meta name="author" content="진안군민">
-    
+
     <!-- PWA 메타 태그 -->
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="진안 캠페인">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jinan-campaign.web.app/">
     <meta property="og:title" content="진안군 목조전망대 반대 캠페인">
     <meta property="og:description" content="445억원 혈세낭비를 막아주세요! 지금 서명에 참여하세요.">
     <meta property="og:image" content="/images/og-image.jpg">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://jinan-campaign.web.app/">
     <meta property="twitter:title" content="진안군 목조전망대 반대 캠페인">
     <meta property="twitter:description" content="445억원 혈세낭비를 막아주세요! 지금 서명에 참여하세요.">
     <meta property="twitter:image" content="/images/og-image.jpg">
-    
+
     <title>진안 캠페인 - 목조전망대 반대</title>
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
-    
+
     <!-- Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180.png">
-    
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/styles.css">
-    
+
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com">
-    
+
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+
+    <!-- PWA 관련 추가 -->
+    <link rel="apple-touch-icon" href="/images/icons/icon-180.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="진안 캠페인">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="msapplication-TileImage" content="/images/icons/icon-144.png">
 </head>
+
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
@@ -190,7 +199,7 @@
             <section id="info-content" class="tab-content">
                 <div class="content-padding">
                     <h2 class="page-title">💰 사업 현황</h2>
-                    
+
                     <!-- Budget Visualization -->
                     <div class="budget-card">
                         <div class="budget-header">
@@ -244,7 +253,7 @@
             <section id="sign-content" class="tab-content">
                 <div class="content-padding">
                     <h2 class="page-title">✍️ 서명 참여</h2>
-                    
+
                     <!-- Current Status -->
                     <div class="sign-status-card">
                         <div class="sign-status-count" id="current-signatures">0명</div>
@@ -259,9 +268,10 @@
                     <form id="signatureForm" class="sign-form">
                         <div class="form-group">
                             <label class="form-label" for="name">이름 *</label>
-                            <input type="text" id="name" name="name" class="form-control" required placeholder="실명을 입력해주세요">
+                            <input type="text" id="name" name="name" class="form-control" required
+                                placeholder="실명을 입력해주세요">
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label" for="region">거주지 *</label>
                             <select id="region" name="region" class="form-control" required>
@@ -279,34 +289,35 @@
                                 <option value="상전면">상전면</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label" for="phone">연락처 (선택)</label>
                             <input type="tel" id="phone" name="phone" class="form-control" placeholder="010-0000-0000">
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label" for="comment">의견 (선택)</label>
-                            <textarea id="comment" name="comment" rows="3" class="form-control form-textarea" placeholder="목조전망대 사업에 대한 의견을 자유롭게 작성해주세요"></textarea>
+                            <textarea id="comment" name="comment" rows="3" class="form-control form-textarea"
+                                placeholder="목조전망대 사업에 대한 의견을 자유롭게 작성해주세요"></textarea>
                         </div>
-                        
+
                         <div class="checkbox-group">
                             <div class="checkbox-item">
                                 <input type="checkbox" id="isPublic" name="isPublic">
                                 <label for="isPublic">이름을 서명자 목록에 공개합니다</label>
                             </div>
-                            
+
                             <div class="checkbox-item">
                                 <input type="checkbox" id="allowContact" name="allowContact">
                                 <label for="allowContact">캠페인 관련 연락을 받겠습니다</label>
                             </div>
-                            
+
                             <div class="checkbox-item">
                                 <input type="checkbox" id="agreePrivacy" name="agreePrivacy" required>
                                 <label for="agreePrivacy">개인정보 처리방침에 동의합니다 *</label>
                             </div>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-danger btn-lg btn-block">
                             서명 참여하기
                         </button>
@@ -326,7 +337,7 @@
             <section id="community-content" class="tab-content">
                 <div class="content-padding">
                     <h2 class="page-title">💬 커뮤니티</h2>
-                    
+
                     <!-- Community Stats -->
                     <div class="community-stats">
                         <div class="community-stats-grid">
@@ -370,7 +381,7 @@
                         <!-- 게시글이 여기에 동적으로 추가됨 -->
                     </div>
                 </div>
-                
+
                 <!-- Write Post Button -->
                 <button class="fab write-fab" onclick="app.showWritePost()">✏️</button>
             </section>
@@ -379,11 +390,11 @@
             <section id="poll-content" class="tab-content">
                 <div class="content-padding">
                     <h2 class="page-title">🗳️ 설문조사 & 투표</h2>
-                    
+
                     <!-- Active Polls -->
                     <div class="polls-section">
                         <h3 class="section-title">🔥 진행중인 투표</h3>
-                        
+
                         <div class="poll-container" id="active-polls">
                             <!-- 투표가 여기에 동적으로 추가됨 -->
                         </div>
@@ -392,7 +403,7 @@
                     <!-- Survey Section -->
                     <div class="survey-section">
                         <h3 class="section-title">📊 설문조사</h3>
-                        
+
                         <div class="survey-card">
                             <div class="survey-header">
                                 <h4>진안군 정책 만족도 조사</h4>
@@ -440,7 +451,7 @@
                 <h3 class="modal-title">새 글 작성</h3>
                 <button class="modal-close" onclick="app.hideWritePostModal()">×</button>
             </div>
-            
+
             <form id="newPostForm">
                 <div class="form-group">
                     <select name="category" class="form-control" required>
@@ -452,19 +463,20 @@
                         <option value="Q&A">Q&A</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <input type="text" name="title" placeholder="제목을 입력하세요" class="form-control" required>
                 </div>
-                
+
                 <div class="form-group">
-                    <textarea name="content" rows="4" placeholder="내용을 입력하세요" class="form-control form-textarea" required></textarea>
+                    <textarea name="content" rows="4" placeholder="내용을 입력하세요" class="form-control form-textarea"
+                        required></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <input type="text" name="hashtags" placeholder="#해시태그 (띄어쓰기로 구분)" class="form-control">
                 </div>
-                
+
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="app.hideWritePostModal()">취소</button>
                     <button type="submit" class="btn btn-primary">게시</button>
@@ -480,11 +492,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
-    
+
     <!-- App Scripts -->
-    <script src="/js/firebase-config.js"></script>
-    <script src="/js/app.js"></script>
-    
+    <script src="/firebase-config.js"></script>
+    <script src="/app.js"></script>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -495,5 +507,22 @@
             });
         }
     </script>
+    <script>
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // 앱 서비스 워커
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('App SW registered:', reg))
+                    .catch(err => console.error('App SW registration failed:', err));
+
+                // FCM 서비스 워커
+                navigator.serviceWorker.register('/firebase-messaging-sw.js')
+                    .then(reg => console.log('FCM SW registered:', reg))
+                    .catch(err => console.error('FCM SW registration failed:', err));
+            });
+        }
+    </script>
 </body>
+
 </html>

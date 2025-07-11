@@ -1,0 +1,14 @@
+{
+  "name": "jinan-campaign-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "진안군 목조전망대 반대 캠페인 관리자 CMS",
+  "scripts": {
+    "start": "serve -s . -p 3001",
+    "build": "echo 'No build required for vanilla JS'",
+    "test": "echo 'No tests'"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

@@ -1,12 +1,15 @@
 {
   "hosting": [
     {
-      "site": "jinan-campaign",
+      "target": "frontend",
       "public": "frontend",
       "ignore": [
         "firebase.json",
         "**/.*",
-        "**/node_modules/**"
+        "**/node_modules/**",
+        "**/*.log",
+        "**/package.json",
+        "**/package-lock.json"
       ],
       "rewrites": [
         {
@@ -20,7 +23,7 @@
           "headers": [
             {
               "key": "Cache-Control",
-              "value": "max-age=7200"
+              "value": "max-age=604800"
             }
           ]
         },
@@ -32,21 +35,57 @@
               "value": "max-age=3600"
             }
           ]
+        },
+        {
+          "source": "sw.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "manifest.json",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/manifest+json"
+            }
+          ]
         }
       ]
     },
     {
-      "site": "jinan-campaign-admin",
+      "target": "admin",
       "public": "admin",
       "ignore": [
         "firebase.json",
         "**/.*",
-        "**/node_modules/**"
+        "**/node_modules/**",
+        "**/*.log",
+        "**/package.json",
+        "**/package-lock.json"
       ],
       "rewrites": [
         {
           "source": "**",
           "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            }
+          ]
         }
       ]
     }
@@ -58,18 +97,9 @@
   "storage": {
     "rules": "storage.rules"
   },
-  "functions": {
-    "source": "functions",
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run lint"
-    ]
-  },
   "emulators": {
     "auth": {
       "port": 9099
-    },
-    "functions": {
-      "port": 5001
     },
     "firestore": {
       "port": 8080
@@ -79,6 +109,10 @@
     },
     "storage": {
       "port": 9199
-    }
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
   }
 }
