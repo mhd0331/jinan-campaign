@@ -1,7 +1,10 @@
+// storage.rules
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // ========================================
     // 공통 함수
+    // ========================================
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,30 +14,80 @@ service firebase.storage {
         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
     
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // 5MB
+    }
+    
+    function isValidDocumentFile() {
+      return request.resource.contentType.matches('(application/pdf|application/msword|application/vnd.openxmlformats-officedocument.*)') &&
+             request.resource.size < 10 * 1024 * 1024; // 10MB
+    }
+    
+    // ========================================
     // 이미지 업로드
-    match /images/{imageId} {
+    // ========================================
+    match /images/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && 
-                     request.resource.size < 5 * 1024 * 1024 && // 5MB 제한
-                     request.resource.contentType.matches('image/.*');
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated() && isValidImageFile();
+      allow update: if isAuthenticated() && isValidImageFile() && 
+                      (resource.metadata.uploadedBy == request.auth.uid || isAdmin());
+      allow delete: if isAdmin() || 
+                      (isAuthenticated() && resource.metadata.uploadedBy == request.auth.uid);
     }
     
-    // 문서 업로드 (관리자만)
-    match /documents/{documentId} {
+    // ========================================
+    // 게시글 이미지
+    // ========================================
+    match /posts/{postId}/{imageId} {
       allow read: if true;
-      allow write: if isAdmin() &&
-                     request.resource.size < 10 * 1024 * 1024; // 10MB 제한
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated() && isValidImageFile();
+      allow update: if false;
+      allow delete: if isAdmin() || 
+                      (isAuthenticated() && resource.metadata.uploadedBy == request.auth.uid);
     }
     
+    // ========================================
     // 사용자 프로필 이미지
+    // ========================================
     match /users/{userId}/profile/{imageId} {
       allow read: if true;
-      allow write: if request.auth.uid == userId &&
-                     request.resource.size < 2 * 1024 * 1024 && // 2MB 제한
-                     request.resource.contentType.matches('image/.*');
-      allow delete: if request.auth.uid == userId || isAdmin();
+      allow create: if isOwner(userId) && isValidImageFile();
+      allow update: if isOwner(userId) && isValidImageFile();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ========================================
+    // 문서 업로드 (관리자만)
+    // ========================================
+    match /documents/{allPaths=**} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidDocumentFile();
+      allow update: if isAdmin() && isValidDocumentFile();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // 캠페인 자료
+    // ========================================
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // 임시 업로드 (24시간 후 자동 삭제)
+    // ========================================
+    match /temp/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                      request.resource.size < 10 * 1024 * 1024; // 10MB
+      allow update: if false;
+      allow delete: if isOwner(userId) || isAdmin();
     }
   }
 }

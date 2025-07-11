@@ -1,8 +1,9 @@
+// admin/js/firebase-admin-service.js
 /**
- * 진안 캠페인 관리자 CMS - Firebase 관리자 설정
+ * 진안 캠페인 관리자 - Firebase 서비스
  */
 
-class FirebaseAdmin {
+class FirebaseAdminService {
     constructor() {
         this.app = null;
         this.db = null;
@@ -16,15 +17,7 @@ class FirebaseAdmin {
         if (this.isInitialized) return;
 
         try {
-            // Firebase 설정 (환경변수에서 로드)
-            const firebaseConfig = {
-                apiKey: process.env.FIREBASE_API_KEY || "YOUR_API_KEY",
-                authDomain: process.env.FIREBASE_AUTH_DOMAIN || "YOUR_AUTH_DOMAIN",
-                projectId: process.env.FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID",
-                storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "YOUR_STORAGE_BUCKET",
-                messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "YOUR_MESSAGING_SENDER_ID",
-                appId: process.env.FIREBASE_APP_ID || "YOUR_APP_ID"
-            };
+            console.log('🔥 Firebase Admin 초기화 시작...');
 
             // Firebase 앱 초기화
             if (!firebase.apps.length) {
@@ -38,12 +31,18 @@ class FirebaseAdmin {
             
             // Authentication 초기화
             this.auth = firebase.auth();
+            await this.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
             // Storage 초기화
             this.storage = firebase.storage();
 
             // Functions 초기화
-            this.functions = firebase.functions();
+            this.functions = firebase.functions('asia-northeast3');
+
+            // 에뮬레이터 연결 (개발 환경)
+            if (envConfig.useEmulator) {
+                this.connectToEmulators();
+            }
 
             this.isInitialized = true;
             console.log('✅ Firebase Admin 초기화 완료');
@@ -52,6 +51,15 @@ class FirebaseAdmin {
             console.error('❌ Firebase Admin 초기화 실패:', error);
             throw error;
         }
+    }
+
+    connectToEmulators() {
+        console.log('🔧 에뮬레이터 연결 중...');
+        
+        this.db.useEmulator('localhost', 8080);
+        this.auth.useEmulator('http://localhost:9099');
+        this.storage.useEmulator('localhost', 9199);
+        this.functions.useEmulator('localhost', 5001);
     }
 
     // ==========================================================================
@@ -64,7 +72,7 @@ class FirebaseAdmin {
             
             // 관리자 권한 확인
             const user = await this.getUser(result.user.uid);
-            if (!user.isAdmin) {
+            if (!user || !user.isAdmin) {
                 await this.auth.signOut();
                 throw new Error('관리자 권한이 없습니다.');
             }
@@ -101,7 +109,10 @@ class FirebaseAdmin {
 
     async getCampaigns() {
         try {
-            const snapshot = await this.db.collection('campaigns').get();
+            const snapshot = await this.db.collection('campaigns')
+                .orderBy('createdAt', 'desc')
+                .get();
+                
             return snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -128,7 +139,8 @@ class FirebaseAdmin {
                 ...data,
                 currentSignatures: 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: this.getCurrentUser().uid
             };
 
             const docRef = await this.db.collection('campaigns').add(campaign);
@@ -144,7 +156,8 @@ class FirebaseAdmin {
         try {
             const update = {
                 ...data,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: this.getCurrentUser().uid
             };
 
             await this.db.collection('campaigns').doc(id).update(update);
@@ -184,10 +197,12 @@ class FirebaseAdmin {
                 query = query.where('verificationStatus', '==', filters.verificationStatus);
             }
             if (filters.startDate) {
-                query = query.where('timestamp', '>=', filters.startDate);
+                query = query.where('timestamp', '>=', new Date(filters.startDate));
             }
             if (filters.endDate) {
-                query = query.where('timestamp', '<=', filters.endDate);
+                const endDate = new Date(filters.endDate);
+                endDate.setHours(23, 59, 59, 999);
+                query = query.where('timestamp', '<=', endDate);
             }
 
             // 정렬
@@ -202,10 +217,14 @@ class FirebaseAdmin {
             }
 
             const snapshot = await query.get();
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            
+            return {
+                signatures: snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })),
+                lastDoc: snapshot.docs[snapshot.docs.length - 1] || null
+            };
         } catch (error) {
             console.error('서명 조회 실패:', error);
             throw error;
@@ -226,19 +245,46 @@ class FirebaseAdmin {
         }
     }
 
-    async exportSignatures(campaignId) {
+    async bulkUpdateSignatures(ids, status) {
         try {
-            const signatures = await this.getSignatures({ 
+            const batch = this.db.batch();
+            const verifiedBy = this.getCurrentUser().uid;
+            const verifiedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+            ids.forEach(id => {
+                const ref = this.db.collection('signatures').doc(id);
+                batch.update(ref, {
+                    verificationStatus: status,
+                    verifiedAt: verifiedAt,
+                    verifiedBy: verifiedBy
+                });
+            });
+
+            await batch.commit();
+            console.log('✅ 일괄 서명 업데이트 성공:', ids.length);
+        } catch (error) {
+            console.error('❌ 일괄 서명 업데이트 실패:', error);
+            throw error;
+        }
+    }
+
+    async exportSignatures(campaignId, format = 'csv') {
+        try {
+            // Cloud Function 호출
+            const exportFunction = this.functions.httpsCallable('exportSignatures');
+            const result = await exportFunction({ campaignId, format });
+            
+            return result.data.downloadUrl;
+        } catch (error) {
+            console.error('서명 내보내기 실패:', error);
+            
+            // 대체 방법: 클라이언트에서 직접 처리
+            const { signatures } = await this.getSignatures({ 
                 campaignId, 
                 limit: 10000 
             });
-
-            // CSV 형식으로 변환
-            const csv = this.convertToCSV(signatures);
-            return csv;
-        } catch (error) {
-            console.error('서명 내보내기 실패:', error);
-            throw error;
+            
+            return this.generateCSV(signatures);
         }
     }
 
@@ -256,8 +302,19 @@ class FirebaseAdmin {
             if (filters.region) {
                 query = query.where('region', '==', filters.region);
             }
+            if (filters.role) {
+                if (filters.role === 'admin') {
+                    query = query.where('isAdmin', '==', true);
+                } else if (filters.role === 'moderator') {
+                    query = query.where('isModerator', '==', true);
+                }
+            }
 
             query = query.orderBy('createdAt', 'desc');
+
+            if (filters.limit) {
+                query = query.limit(filters.limit);
+            }
 
             const snapshot = await query.get();
             return snapshot.docs.map(doc => ({
@@ -284,7 +341,8 @@ class FirebaseAdmin {
         try {
             await this.db.collection('users').doc(uid).update({
                 ...data,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: this.getCurrentUser().uid
             });
             console.log('✅ 사용자 업데이트 성공:', uid);
         } catch (error) {
@@ -293,12 +351,12 @@ class FirebaseAdmin {
         }
     }
 
-    async banUser(uid) {
+    async toggleUserStatus(uid, isActive) {
         try {
-            await this.updateUser(uid, { isActive: false });
-            console.log('✅ 사용자 정지 성공:', uid);
+            await this.updateUser(uid, { isActive });
+            console.log(`✅ 사용자 ${isActive ? '활성화' : '비활성화'} 성공:`, uid);
         } catch (error) {
-            console.error('❌ 사용자 정지 실패:', error);
+            console.error('❌ 사용자 상태 변경 실패:', error);
             throw error;
         }
     }
@@ -322,6 +380,10 @@ class FirebaseAdmin {
             }
 
             query = query.orderBy('createdAt', 'desc');
+
+            if (filters.limit) {
+                query = query.limit(filters.limit);
+            }
 
             const snapshot = await query.get();
             return snapshot.docs.map(doc => ({
@@ -360,7 +422,8 @@ class FirebaseAdmin {
         try {
             await this.db.collection('posts').doc(id).update({
                 ...data,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: this.getCurrentUser().uid
             });
             console.log('✅ 게시글 업데이트 성공:', id);
         } catch (error) {
@@ -369,13 +432,12 @@ class FirebaseAdmin {
         }
     }
 
-    async deletePost(id) {
+    async togglePostStatus(id, isActive) {
         try {
-            // 실제로는 isActive를 false로 변경
-            await this.updatePost(id, { isActive: false });
-            console.log('✅ 게시글 삭제 성공:', id);
+            await this.updatePost(id, { isActive });
+            console.log(`✅ 게시글 ${isActive ? '활성화' : '비활성화'} 성공:`, id);
         } catch (error) {
-            console.error('❌ 게시글 삭제 실패:', error);
+            console.error('❌ 게시글 상태 변경 실패:', error);
             throw error;
         }
     }
@@ -409,9 +471,15 @@ class FirebaseAdmin {
         try {
             const poll = {
                 ...data,
+                options: data.options.map((text, index) => ({
+                    id: index,
+                    text: text,
+                    votes: 0
+                })),
                 totalVotes: 0,
                 isActive: true,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: this.getCurrentUser().uid
             };
 
             const docRef = await this.db.collection('polls').add(poll);
@@ -427,7 +495,8 @@ class FirebaseAdmin {
         try {
             await this.db.collection('polls').doc(id).update({
                 isActive: false,
-                closedAt: firebase.firestore.FieldValue.serverTimestamp()
+                closedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                closedBy: this.getCurrentUser().uid
             });
             console.log('✅ 투표 마감 성공:', id);
         } catch (error) {
@@ -436,16 +505,40 @@ class FirebaseAdmin {
         }
     }
 
-    async getPollVotes(pollId) {
+    async getPollResults(pollId) {
         try {
-            const snapshot = await this.db.collection('poll_votes')
+            // 투표 정보 가져오기
+            const pollDoc = await this.db.collection('polls').doc(pollId).get();
+            if (!pollDoc.exists) {
+                throw new Error('투표를 찾을 수 없습니다.');
+            }
+
+            const poll = { id: pollDoc.id, ...pollDoc.data() };
+
+            // 투표 참여자 목록 가져오기
+            const votesSnapshot = await this.db.collection('poll_votes')
                 .where('pollId', '==', pollId)
                 .get();
 
-            return snapshot.docs.map(doc => ({
+            const votes = votesSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
+            // 옵션별 집계
+            const optionCounts = {};
+            votes.forEach(vote => {
+                vote.selectedOptions.forEach(optionId => {
+                    optionCounts[optionId] = (optionCounts[optionId] || 0) + 1;
+                });
+            });
+
+            return {
+                poll: poll,
+                votes: votes,
+                optionCounts: optionCounts,
+                totalVotes: votes.length
+            };
         } catch (error) {
             console.error('투표 결과 조회 실패:', error);
             throw error;
@@ -461,32 +554,59 @@ class FirebaseAdmin {
             const notification = {
                 ...data,
                 isRead: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: this.getCurrentUser().uid
             };
 
             // 대상별 처리
             if (data.target === 'all') {
-                // 모든 사용자에게 발송
-                const users = await this.getUsers({ isActive: true });
-                const batch = this.db.batch();
-
-                users.forEach(user => {
-                    const docRef = this.db.collection('notifications').doc();
-                    batch.set(docRef, {
-                        ...notification,
-                        userId: user.id
-                    });
-                });
-
-                await batch.commit();
+                // Cloud Function 호출
+                const sendBulkNotification = this.functions.httpsCallable('sendBulkNotification');
+                await sendBulkNotification(notification);
+                
                 console.log('✅ 전체 알림 발송 성공');
-            } else {
+            } else if (data.target === 'specific' && data.userId) {
                 // 특정 사용자에게 발송
-                await this.db.collection('notifications').add(notification);
+                await this.db.collection('notifications').add({
+                    ...notification,
+                    userId: data.userId
+                });
+                
                 console.log('✅ 개별 알림 발송 성공');
             }
         } catch (error) {
             console.error('❌ 알림 발송 실패:', error);
+            throw error;
+        }
+    }
+
+    async getNotifications(filters = {}) {
+        try {
+            let query = this.db.collection('notifications');
+
+            if (filters.userId) {
+                query = query.where('userId', '==', filters.userId);
+            }
+            if (filters.type) {
+                query = query.where('type', '==', filters.type);
+            }
+            if (filters.isRead !== undefined) {
+                query = query.where('isRead', '==', filters.isRead);
+            }
+
+            query = query.orderBy('createdAt', 'desc');
+
+            if (filters.limit) {
+                query = query.limit(filters.limit);
+            }
+
+            const snapshot = await query.get();
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error('알림 조회 실패:', error);
             throw error;
         }
     }
@@ -500,48 +620,68 @@ class FirebaseAdmin {
             const doc = await this.db.collection('statistics')
                 .where('date', '==', date)
                 .where('type', '==', type)
+                .limit(1)
                 .get();
 
             if (!doc.empty) {
                 return doc.docs[0].data();
             }
 
-            return null;
+            // 통계가 없으면 실시간 계산
+            return await this.calculateStatistics(date, type);
         } catch (error) {
             console.error('통계 조회 실패:', error);
             throw error;
         }
     }
 
-    async generateStatistics(date) {
+    async calculateStatistics(date, type) {
+        // 실시간 통계 계산
+        const stats = {
+            date: date,
+            type: type,
+            signatures: {
+                total: 0,
+                new: 0,
+                byRegion: {}
+            },
+            users: {
+                total: 0,
+                active: 0,
+                new: 0
+            },
+            posts: {
+                total: 0,
+                new: 0,
+                byCategory: {}
+            }
+        };
+
+        // 서명 통계
+        const signaturesSnapshot = await this.db.collection('signatures').get();
+        stats.signatures.total = signaturesSnapshot.size;
+
+        // 사용자 통계
+        const usersSnapshot = await this.db.collection('users').get();
+        stats.users.total = usersSnapshot.size;
+        stats.users.active = usersSnapshot.docs.filter(doc => doc.data().isActive).length;
+
+        // 게시글 통계
+        const postsSnapshot = await this.db.collection('posts').get();
+        stats.posts.total = postsSnapshot.size;
+
+        return stats;
+    }
+
+    async generateStatisticsReport(startDate, endDate) {
         try {
-            // 일일 통계 생성
-            const stats = {
-                date: date,
-                type: 'daily',
-                signatures: {
-                    total: 0,
-                    new: 0,
-                    byRegion: {}
-                },
-                users: {
-                    activeUsers: 0,
-                    newUsers: 0
-                },
-                posts: {
-                    total: 0,
-                    new: 0,
-                    byCategory: {}
-                }
-            };
-
-            // 실제 데이터 집계 로직
-            // ...
-
-            await this.db.collection('statistics').add(stats);
-            console.log('✅ 통계 생성 성공:', date);
+            // Cloud Function 호출
+            const generateReport = this.functions.httpsCallable('generateStatisticsReport');
+            const result = await generateReport({ startDate, endDate });
+            
+            return result.data;
         } catch (error) {
-            console.error('❌ 통계 생성 실패:', error);
+            console.error('통계 리포트 생성 실패:', error);
             throw error;
         }
     }
@@ -553,11 +693,33 @@ class FirebaseAdmin {
     async uploadFile(file, path) {
         try {
             const storageRef = this.storage.ref().child(path);
-            const snapshot = await storageRef.put(file);
-            const downloadURL = await snapshot.ref.getDownloadURL();
+            const metadata = {
+                contentType: file.type,
+                customMetadata: {
+                    uploadedBy: this.getCurrentUser().uid,
+                    uploadedAt: new Date().toISOString()
+                }
+            };
+
+            const uploadTask = storageRef.put(file, metadata);
             
-            console.log('✅ 파일 업로드 성공:', downloadURL);
-            return downloadURL;
+            return new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log(`업로드 진행률: ${progress}%`);
+                    },
+                    (error) => {
+                        console.error('업로드 실패:', error);
+                        reject(error);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        console.log('✅ 파일 업로드 성공:', downloadURL);
+                        resolve(downloadURL);
+                    }
+                );
+            });
         } catch (error) {
             console.error('❌ 파일 업로드 실패:', error);
             throw error;
@@ -579,7 +741,7 @@ class FirebaseAdmin {
     // Utilities
     // ==========================================================================
 
-    convertToCSV(data) {
+    generateCSV(data) {
         if (!data || data.length === 0) return '';
 
         const headers = Object.keys(data[0]);
@@ -588,20 +750,25 @@ class FirebaseAdmin {
             ...data.map(row => 
                 headers.map(header => {
                     const value = row[header];
+                    // 타임스탬프 변환
+                    if (header === 'timestamp' && value && value.toDate) {
+                        return value.toDate().toLocaleString('ko-KR');
+                    }
                     // 쉼표나 줄바꿈이 있으면 따옴표로 감싸기
                     if (typeof value === 'string' && (value.includes(',') || value.includes('\n'))) {
                         return `"${value.replace(/"/g, '""')}"`;
                     }
-                    return value;
+                    return value || '';
                 }).join(',')
             )
         ].join('\n');
 
-        return csv;
+        // BOM 추가 (한글 깨짐 방지)
+        return '\ufeff' + csv;
     }
 
     downloadCSV(filename, csv) {
-        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         
@@ -612,6 +779,8 @@ class FirebaseAdmin {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
     }
 
     // 실시간 리스너
@@ -639,20 +808,29 @@ class FirebaseAdmin {
                 callback(signatures);
             });
     }
+
+    // 권한 체크
+    async checkAdminPermission() {
+        const user = this.getCurrentUser();
+        if (!user) {
+            throw new Error('로그인이 필요합니다.');
+        }
+
+        const userData = await this.getUser(user.uid);
+        if (!userData || !userData.isAdmin) {
+            throw new Error('관리자 권한이 없습니다.');
+        }
+
+        return true;
+    }
 }
 
-// 전역 Firebase Admin 인스턴스
-const firebaseAdmin = new FirebaseAdmin();
+// 전역 서비스 인스턴스
+const firebaseAdminService = new FirebaseAdminService();
 
-// 초기화
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await firebaseAdmin.initialize();
-        console.log('🚀 Firebase Admin 서비스 준비 완료');
-    } catch (error) {
-        console.error('❌ Firebase Admin 서비스 초기화 실패:', error);
-    }
-});
-
-// 전역 접근을 위해 window에 추가
-window.firebaseAdmin = firebaseAdmin;
+// Export
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = firebaseAdminService;
+} else {
+    window.firebaseAdminService = firebaseAdminService;
+}

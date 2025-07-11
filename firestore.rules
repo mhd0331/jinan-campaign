@@ -1,7 +1,10 @@
+// firestore.rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 공통 함수들
+    // ========================================
+    // 공통 함수
+    // ========================================
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,67 +14,188 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
     
+    function isModerator() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isModerator == true;
+    }
+    
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // 캠페인 정보 (읽기 전용)
-    match /campaigns/{campaignId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isValidEmail(email) {
+      return email.matches('.*@.*\\..*');
     }
     
-    // 서명 데이터
+    function isValidRegion(region) {
+      return region in ['진안읍', '마령면', '백운면', '성수면', '동향면', 
+                        '용담면', '정천면', '주천면', '안천면', '부귀면', '상전면'];
+    }
+    
+    // ========================================
+    // 캠페인
+    // ========================================
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // 서명
+    // ========================================
     match /signatures/{signatureId} {
+      // 생성: 필수 필드와 유효성 검사
       allow create: if request.resource.data.keys().hasAll(['name', 'region', 'campaignId', 'agreePrivacy']) &&
                       request.resource.data.name is string &&
                       request.resource.data.name.size() >= 2 &&
-                      request.resource.data.region is string &&
-                      request.resource.data.agreePrivacy == true;
+                      request.resource.data.name.size() <= 50 &&
+                      isValidRegion(request.resource.data.region) &&
+                      request.resource.data.campaignId is string &&
+                      request.resource.data.agreePrivacy == true &&
+                      request.resource.data.timestamp == request.time;
       
+      // 읽기: 관리자 또는 공개된 서명만
       allow read: if isAdmin() || 
                     (resource.data.isPublic == true && 
-                     request.query.limit <= 10);
+                     ['name', 'region', 'timestamp'].hasAll(request.query.fields));
       
-      allow update, delete: if false;
+      // 수정: 관리자만 상태 변경 가능
+      allow update: if isAdmin() && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verificationStatus', 'verifiedAt', 'verifiedBy']);
+      
+      // 삭제: 불가
+      allow delete: if false;
     }
     
-    // 사용자 프로필
+    // ========================================
+    // 사용자
+    // ========================================
     match /users/{userId} {
       allow read: if true;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      
+      // 생성: 본인만
+      allow create: if isOwner(userId) &&
+                      request.resource.data.uid == userId &&
+                      request.resource.data.isAdmin == false &&
+                      request.resource.data.isModerator == false;
+      
+      // 수정: 본인 또는 관리자
+      allow update: if (isOwner(userId) && 
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isModerator', 'level', 'points'])) ||
+                      isAdmin();
+      
+      // 삭제: 관리자만
       allow delete: if isAdmin();
     }
     
+    // ========================================
     // 게시글
+    // ========================================
     match /posts/{postId} {
+      // 읽기: 활성 게시글 또는 관리자
       allow read: if resource.data.isActive == true || isAdmin();
-      allow create: if isAuthenticated();
-      allow update: if isOwner(resource.data.authorId) || isAdmin();
+      
+      // 생성: 인증된 사용자
+      allow create: if isAuthenticated() &&
+                      request.resource.data.keys().hasAll(['title', 'content', 'category']) &&
+                      request.resource.data.title.size() > 0 &&
+                      request.resource.data.title.size() <= 100 &&
+                      request.resource.data.content.size() > 0 &&
+                      request.resource.data.content.size() <= 5000 &&
+                      request.resource.data.authorId == request.auth.uid;
+      
+      // 수정: 작성자 또는 모더레이터
+      allow update: if isAuthenticated() && 
+                      (isOwner(resource.data.authorId) || isModerator());
+      
+      // 삭제: 관리자만 (실제로는 isActive를 false로 변경)
       allow delete: if isAdmin();
     }
     
+    // ========================================
     // 댓글
+    // ========================================
     match /comments/{commentId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
-      allow update: if isOwner(resource.data.authorId);
-      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+      // 읽기: 활성 댓글만
+      allow read: if resource.data.isActive == true || isAdmin();
+      
+      // 생성: 인증된 사용자
+      allow create: if isAuthenticated() &&
+                      request.resource.data.keys().hasAll(['postId', 'content', 'authorId']) &&
+                      request.resource.data.content.size() > 0 &&
+                      request.resource.data.content.size() <= 1000 &&
+                      request.resource.data.authorId == request.auth.uid;
+      
+      // 수정: 작성자만
+      allow update: if isOwner(resource.data.authorId) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt']);
+      
+      // 삭제: 작성자 또는 모더레이터
+      allow delete: if isOwner(resource.data.authorId) || isModerator();
     }
     
+    // ========================================
     // 투표
+    // ========================================
     match /polls/{pollId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // 투표 기록
+    // ========================================
+    match /poll_votes/{voteId} {
+      // 생성: 인증된 사용자, 본인 투표만
+      allow create: if isAuthenticated() &&
+                      request.resource.data.keys().hasAll(['pollId', 'userId', 'selectedOptions']) &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.selectedOptions.size() > 0;
+      
+      // 읽기: 관리자 또는 본인
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+      
+      // 수정/삭제: 불가
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // 알림
+    // ========================================
+    match /notifications/{notificationId} {
+      // 읽기: 본인 알림만
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // 생성: 시스템(관리자)만
+      allow create: if isAdmin();
+      
+      // 수정: 읽음 표시만 가능
+      allow update: if isOwner(resource.data.userId) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead', 'readAt']);
+      
+      // 삭제: 본인 또는 관리자
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // ========================================
+    // 통계
+    // ========================================
+    match /statistics/{statId} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
-    // 투표 기록
-    match /poll_votes/{voteId} {
-      allow create: if isAuthenticated() &&
-                      request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin() || isOwner(resource.data.userId);
-      allow update, delete: if false;
+    // ========================================
+    // 시스템 설정
+    // ========================================
+    match /system/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
