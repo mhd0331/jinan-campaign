@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>진안 캠페인 관리자 CMS</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--gray-900);
+            color: white;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-700);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--gray-300);
+        }
+
+        .nav-item:hover {
+            background: var(--gray-800);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-info h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--gray-100);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--gray-50);
+        }
+
+        th {
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 0.25rem;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray-600);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--gray-800);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: auto;
+            min-width: 150px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .pagination-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">진안 캠페인 CMS</h1>
+                <p class="sidebar-subtitle">관리자 패널</p>
+            </div>
+
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">대시보드</div>
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span>통계 대시보드</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">캠페인 관리</div>
+                    <a href="#" class="nav-item" data-page="campaigns">
+                        <span class="nav-icon">📢</span>
+                        <span>캠페인 정보</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="signatures">
+                        <span class="nav-icon">✍️</span>
+                        <span>서명 관리</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">커뮤니티</div>
+                    <a href="#" class="nav-item" data-page="users">
+                        <span class="nav-icon">👥</span>
+                        <span>사용자 관리</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="posts">
+                        <span class="nav-icon">📝</span>
+                        <span>게시글 관리</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="comments">
+                        <span class="nav-icon">💬</span>
+                        <span>댓글 관리</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">참여</div>
+                    <a href="#" class="nav-item" data-page="polls">
+                        <span class="nav-icon">🗳️</span>
+                        <span>투표 관리</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="poll-votes">
+                        <span class="nav-icon">📊</span>
+                        <span>투표 결과</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">시스템</div>
+                    <a href="#" class="nav-item" data-page="notifications">
+                        <span class="nav-icon">🔔</span>
+                        <span>알림 관리</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="statistics">
+                        <span class="nav-icon">📈</span>
+                        <span>통계 데이터</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title" id="pageTitle">통계 대시보드</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">
+                        <span>🔄</span>
+                        <span>새로고침</span>
+                    </button>
+                    <button class="btn btn-primary" id="primaryActionBtn">
+                        <span>➕</span>
+                        <span>새로 만들기</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content" id="content">
+                <!-- 동적으로 로드되는 컨텐츠 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">제목</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 동적 내용 -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-secondary" onclick="closeModal()">취소</button>
+                <button class="btn btn-primary" id="modalSubmit">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // 전역 상태
+        const state = {
+            currentPage: 'dashboard',
+            data: {},
+            charts: {}
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            loadPage('dashboard');
+        });
+
+        // 네비게이션 초기화
+        function initializeNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.dataset.page;
+                    loadPage(page);
+                });
+            });
+        }
+
+        // 페이지 로드
+        function loadPage(page) {
+            // 네비게이션 활성화
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === page) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 페이지 상태 업데이트
+            state.currentPage = page;
+
+            // 콘텐츠 로드
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>로딩 중...</div>';
+
+            // 페이지별 콘텐츠 렌더링
+            setTimeout(() => {
+                switch (page) {
+                    case 'dashboard':
+                        renderDashboard();
+                        break;
+                    case 'campaigns':
+                        renderCampaigns();
+                        break;
+                    case 'signatures':
+                        renderSignatures();
+                        break;
+                    case 'users':
+                        renderUsers();
+                        break;
+                    case 'posts':
+                        renderPosts();
+                        break;
+                    case 'comments':
+                        renderComments();
+                        break;
+                    case 'polls':
+                        renderPolls();
+                        break;
+                    case 'poll-votes':
+                        renderPollVotes();
+                        break;
+                    case 'notifications':
+                        renderNotifications();
+                        break;
+                    case 'statistics':
+                        renderStatistics();
+                        break;
+                }
+            }, 300);
+        }
+
+        // 대시보드 렌더링
+        function renderDashboard() {
+            document.getElementById('pageTitle').textContent = '통계 대시보드';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <!-- 통계 카드 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>총 서명 수</h3>
+                            <div class="stat-value">1,247</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>12.3% 증가</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">✍️</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>활성 사용자</h3>
+                            <div class="stat-value">89</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>5.2% 증가</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">👥</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>총 게시글</h3>
+                            <div class="stat-value">234</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>8.7% 증가</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">📝</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>투표 참여율</h3>
+                            <div class="stat-value">78%</div>
+                            <div class="stat-change negative">
+                                <span>↓</span>
+                                <span>2.1% 감소</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">🗳️</div>
+                    </div>
+                </div>
+
+                <!-- 차트 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">일별 서명 추이</h3>
+                    </div>
+                    <canvas id="signatureChart" height="100"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">지역별 서명 분포</h3>
+                    </div>
+                    <canvas id="regionChart" height="100"></canvas>
+                </div>
+
+                <!-- 최근 활동 -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">최근 활동</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>시간</th>
+                                <th>유형</th>
+                                <th>사용자</th>
+                                <th>내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>5분 전</td>
+                                <td><span class="badge badge-success">서명</span></td>
+                                <td>김민수</td>
+                                <td>새로운 서명 참여</td>
+                            </tr>
+                            <tr>
+                                <td>12분 전</td>
+                                <td><span class="badge badge-info">게시글</span></td>
+                                <td>이영희</td>
+                                <td>새 게시글 작성: "목조전망대 반대 이유"</td>
+                            </tr>
+                            <tr>
+                                <td>23분 전</td>
+                                <td><span class="badge badge-warning">투표</span></td>
+                                <td>박철수</td>
+                                <td>투표 참여: "목조전망대 사업 최종 의견"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // 차트 초기화
+            setTimeout(() => {
+                initializeDashboardCharts();
+            }, 100);
+        }
+
+        // 대시보드 차트 초기화
+        function initializeDashboardCharts() {
+            // 서명 추이 차트
+            const signatureCtx = document.getElementById('signatureChart');
+            if (signatureCtx) {
+                state.charts.signature = new Chart(signatureCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['12/1', '12/2', '12/3', '12/4', '12/5', '12/6', '12/7'],
+                        datasets: [{
+                            label: '일별 서명 수',
+                            data: [45, 52, 78, 95, 102, 125, 143],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 지역별 분포 차트
+            const regionCtx = document.getElementById('regionChart');
+            if (regionCtx) {
+                state.charts.region = new Chart(regionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['진안읍', '마령면', '백운면', '성수면', '기타'],
+                        datasets: [{
+                            data: [456, 234, 178, 145, 234],
+                            backgroundColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#10b981',
+                                '#f59e0b',
+                                '#ef4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        // 캠페인 관리 렌더링
+        function renderCampaigns() {
+            document.getElementById('pageTitle').textContent = '캠페인 정보';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">캠페인 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="showCampaignModal()">
+                                <span>➕</span>
+                                <span>새 캠페인</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>제목</th>
+                                <th>설명</th>
+                                <th>목표 서명</th>
+                                <th>현재 서명</th>
+                                <th>상태</th>
+                                <th>시작일</th>
+                                <th>종료일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>jinan-wooden-tower</td>
+                                <td>진안 목조전망대 반대</td>
+                                <td>445억원 혈세낭비 반대 캠페인</td>
+                                <td>10,000</td>
+                                <td>1,247</td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-01</td>
+                                <td>2024-12-31</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="editCampaign('jinan-wooden-tower')">수정</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCampaign('jinan-wooden-tower')">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 서명 관리 렌더링
+        function renderSignatures() {
+            document.getElementById('pageTitle').textContent = '서명 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <!-- 필터 -->
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>지역:</label>
+                        <select id="regionFilter">
+                            <option value="">전체</option>
+                            <option value="진안읍">진안읍</option>
+                            <option value="마령면">마령면</option>
+                            <option value="백운면">백운면</option>
+                            <option value="성수면">성수면</option>
+                            <option value="동향면">동향면</option>
+                            <option value="용담면">용담면</option>
+                            <option value="정천면">정천면</option>
+                            <option value="주천면">주천면</option>
+                            <option value="안천면">안천면</option>
+                            <option value="부귀면">부귀면</option>
+                            <option value="상전면">상전면</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>상태:</label>
+                        <select id="statusFilter">
+                            <option value="">전체</option>
+                            <option value="pending">대기중</option>
+                            <option value="verified">확인됨</option>
+                            <option value="rejected">거부됨</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>날짜:</label>
+                        <input type="date" id="startDate">
+                        <span>~</span>
+                        <input type="date" id="endDate">
+                    </div>
+                    <button class="btn btn-primary" onclick="filterSignatures()">필터 적용</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">서명 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-secondary" onclick="exportSignatures()">
+                                <span>📥</span>
+                                <span>엑셀 내보내기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>이름</th>
+                                <th>지역</th>
+                                <th>의견</th>
+                                <th>공개 동의</th>
+                                <th>연락 동의</th>
+                                <th>상태</th>
+                                <th>서명일시</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="signaturesTableBody">
+                            <tr>
+                                <td>1</td>
+                                <td>김민수</td>
+                                <td>진안읍</td>
+                                <td>절대 반대합니다. 혈세낭비...</td>
+                                <td><span class="badge badge-success">예</span></td>
+                                <td><span class="badge badge-danger">아니오</span></td>
+                                <td><span class="badge badge-warning">대기중</span></td>
+                                <td>2024-12-07 14:23</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="verifySignature(1)">확인</button>
+                                    <button class="btn btn-sm btn-danger" onclick="rejectSignature(1)">거부</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>이영희</td>
+                                <td>마령면</td>
+                                <td>주민 의견 무시하는 행정 반대</td>
+                                <td><span class="badge badge-success">예</span></td>
+                                <td><span class="badge badge-success">예</span></td>
+                                <td><span class="badge badge-success">확인됨</span></td>
+                                <td>2024-12-07 13:45</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="viewSignature(2)">상세</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <!-- 페이지네이션 -->
+                    <div class="pagination">
+                        <button class="pagination-btn" disabled>이전</button>
+                        <button class="pagination-btn active">1</button>
+                        <button class="pagination-btn">2</button>
+                        <button class="pagination-btn">3</button>
+                        <button class="pagination-btn">다음</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 사용자 관리 렌더링
+        function renderUsers() {
+            document.getElementById('pageTitle').textContent = '사용자 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">사용자 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="showUserModal()">
+                                <span>➕</span>
+                                <span>새 사용자</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>UID</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>지역</th>
+                                <th>레벨</th>
+                                <th>포인트</th>
+                                <th>권한</th>
+                                <th>상태</th>
+                                <th>가입일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>user001</td>
+                                <td>관리자</td>
+                                <td>admin@jinan.kr</td>
+                                <td>진안읍</td>
+                                <td>10</td>
+                                <td>9999</td>
+                                <td>
+                                    <span class="badge badge-danger">관리자</span>
+                                </td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-01</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="editUser('user001')">수정</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>user002</td>
+                                <td>김민수</td>
+                                <td>kim@email.com</td>
+                                <td>진안읍</td>
+                                <td>3</td>
+                                <td>250</td>
+                                <td>
+                                    <span class="badge badge-info">일반</span>
+                                </td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-03</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="editUser('user002')">수정</button>
+                                    <button class="btn btn-sm btn-danger" onclick="banUser('user002')">정지</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 게시글 관리 렌더링
+        function renderPosts() {
+            document.getElementById('pageTitle').textContent = '게시글 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <!-- 카테고리 탭 -->
+                <div class="tabs">
+                    <button class="tab active">전체</button>
+                    <button class="tab">공지사항</button>
+                    <button class="tab">자유토론</button>
+                    <button class="tab">긴급제보</button>
+                    <button class="tab">아이디어</button>
+                    <button class="tab">활동인증</button>
+                    <button class="tab">Q&A</button>
+                    <button class="tab">의회소식</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">게시글 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="showPostModal()">
+                                <span>➕</span>
+                                <span>새 게시글</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>카테고리</th>
+                                <th>제목</th>
+                                <th>작성자</th>
+                                <th>조회수</th>
+                                <th>댓글</th>
+                                <th>반응</th>
+                                <th>상태</th>
+                                <th>작성일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><span class="badge badge-danger">공지사항</span></td>
+                                <td>📌 캠페인 참여 안내</td>
+                                <td>관리자</td>
+                                <td>1,234</td>
+                                <td>23</td>
+                                <td>👍 45 ❤️ 12</td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-01</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="editPost(1)">수정</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deletePost(1)">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><span class="badge badge-info">자유토론</span></td>
+                                <td>목조전망대 반대 이유</td>
+                                <td>김민수</td>
+                                <td>567</td>
+                                <td>45</td>
+                                <td>👍 89 😡 3</td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-06</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="viewPost(2)">보기</button>
+                                    <button class="btn btn-sm btn-danger" onclick="hidePost(2)">숨기기</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 댓글 관리 렌더링
+        function renderComments() {
+            document.getElementById('pageTitle').textContent = '댓글 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">댓글 목록</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>게시글</th>
+                                <th>작성자</th>
+                                <th>내용</th>
+                                <th>좋아요</th>
+                                <th>상태</th>
+                                <th>작성일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>목조전망대 반대 이유</td>
+                                <td>이영희</td>
+                                <td>정말 공감합니다. 우리 세금이...</td>
+                                <td>12</td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-07 15:30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteComment(1)">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>캠페인 참여 안내</td>
+                                <td>박철수</td>
+                                <td>어떻게 참여하나요?</td>
+                                <td>3</td>
+                                <td><span class="badge badge-success">활성</span></td>
+                                <td>2024-12-07 14:25</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="replyComment(2)">답글</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteComment(2)">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 투표 관리 렌더링
+        function renderPolls() {
+            document.getElementById('pageTitle').textContent = '투표 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">투표 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="showPollModal()">
+                                <span>➕</span>
+                                <span>새 투표</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>제목</th>
+                                <th>설명</th>
+                                <th>유형</th>
+                                <th>총 투표수</th>
+                                <th>상태</th>
+                                <th>마감일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>목조전망대 사업 최종 의견</td>
+                                <td>진안군 목조전망대 사업(445억원)에 대한...</td>
+                                <td><span class="badge badge-info">단일선택</span></td>
+                                <td>892</td>
+                                <td><span class="badge badge-success">진행중</span></td>
+                                <td>2024-12-22</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="viewPollResults(1)">결과</button>
+                                    <button class="btn btn-sm btn-secondary" onclick="editPoll(1)">수정</button>
+                                    <button class="btn btn-sm btn-danger" onclick="closePoll(1)">마감</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>목조전망대 예산 적정성</td>
+                                <td>445억원 예산이 적정하다고 생각하십니까?</td>
+                                <td><span class="badge badge-info">단일선택</span></td>
+                                <td>1,456</td>
+                                <td><span class="badge badge-danger">마감</span></td>
+                                <td>2024-11-30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="viewPollResults(2)">결과</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 투표 결과 렌더링
+        function renderPollVotes() {
+            document.getElementById('pageTitle').textContent = '투표 결과';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>투표:</label>
+                        <select id="pollSelect">
+                            <option value="1">목조전망대 사업 최종 의견</option>
+                            <option value="2">목조전망대 예산 적정성</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadPollVotes()">조회</button>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">투표 결과 분석</h3>
+                    </div>
+                    <canvas id="pollResultChart" height="100"></canvas>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">투표 참여자 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-secondary" onclick="exportVotes()">
+                                <span>📥</span>
+                                <span>엑셀 내보내기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>사용자</th>
+                                <th>선택 옵션</th>
+                                <th>투표일시</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>김민수</td>
+                                <td>절대 반대</td>
+                                <td>2024-12-07 10:23</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>이영희</td>
+                                <td>절대 반대</td>
+                                <td>2024-12-07 11:45</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>박철수</td>
+                                <td>조건부 찬성</td>
+                                <td>2024-12-07 12:30</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // 차트 초기화
+            setTimeout(() => {
+                const ctx = document.getElementById('pollResultChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['절대 반대', '조건부 찬성', '적극 찬성'],
+                            datasets: [{
+                                label: '투표 수',
+                                data: [695, 134, 63],
+                                backgroundColor: ['#ef4444', '#f59e0b', '#10b981']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // 알림 관리 렌더링
+        function renderNotifications() {
+            document.getElementById('pageTitle').textContent = '알림 관리';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">알림 목록</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="sendNotification()">
+                                <span>📤</span>
+                                <span>알림 발송</span>
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>수신자</th>
+                                <th>유형</th>
+                                <th>제목</th>
+                                <th>내용</th>
+                                <th>읽음</th>
+                                <th>발송일시</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>김민수</td>
+                                <td><span class="badge badge-info">시스템</span></td>
+                                <td>서명이 등록되었습니다</td>
+                                <td>목조전망대 반대 서명이 성공적으로...</td>
+                                <td><span class="badge badge-success">읽음</span></td>
+                                <td>2024-12-07 14:23</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteNotification(1)">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>이영희</td>
+                                <td><span class="badge badge-warning">댓글</span></td>
+                                <td>새로운 댓글이 달렸습니다</td>
+                                <td>작성하신 게시글에 새 댓글이...</td>
+                                <td><span class="badge badge-danger">안읽음</span></td>
+                                <td>2024-12-07 15:30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteNotification(2)">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 통계 데이터 렌더링
+        function renderStatistics() {
+            document.getElementById('pageTitle').textContent = '통계 데이터';
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>기간:</label>
+                        <select id="periodSelect">
+                            <option value="daily">일별</option>
+                            <option value="weekly">주별</option>
+                            <option value="monthly">월별</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>날짜:</label>
+                        <input type="date" id="statStartDate">
+                        <span>~</span>
+                        <input type="date" id="statEndDate">
+                    </div>
+                    <button class="btn btn-primary" onclick="loadStatistics()">조회</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>누적 서명</h3>
+                            <div class="stat-value">1,247</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>143 (오늘)</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">✍️</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>신규 사용자</h3>
+                            <div class="stat-value">23</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>5 (오늘)</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">👥</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>게시글/댓글</h3>
+                            <div class="stat-value">45/123</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>12/34 (오늘)</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon">💬</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">일별 활동 추이</h3>
+                    </div>
+                    <canvas id="activityChart" height="100"></canvas>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">지역별 통계</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>지역</th>
+                                <th>서명 수</th>
+                                <th>사용자 수</th>
+                                <th>게시글 수</th>
+                                <th>참여율</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>진안읍</td>
+                                <td>456</td>
+                                <td>234</td>
+                                <td>89</td>
+                                <td>36.5%</td>
+                            </tr>
+                            <tr>
+                                <td>마령면</td>
+                                <td>234</td>
+                                <td>123</td>
+                                <td>45</td>
+                                <td>18.7%</td>
+                            </tr>
+                            <tr>
+                                <td>백운면</td>
+                                <td>178</td>
+                                <td>89</td>
+                                <td>34</td>
+                                <td>14.2%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // 차트 초기화
+            setTimeout(() => {
+                const ctx = document.getElementById('activityChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['12/1', '12/2', '12/3', '12/4', '12/5', '12/6', '12/7'],
+                            datasets: [
+                                {
+                                    label: '서명',
+                                    data: [45, 52, 78, 95, 102, 125, 143],
+                                    borderColor: '#667eea',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                                },
+                                {
+                                    label: '게시글',
+                                    data: [12, 15, 23, 28, 31, 38, 45],
+                                    borderColor: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                                },
+                                {
+                                    label: '사용자',
+                                    data: [5, 8, 12, 15, 18, 20, 23],
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: 'index'
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // 모달 관련 함수
+        function showModal(title, body) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = body;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // 캠페인 모달
+        function showCampaignModal() {
+            const body = `
+                <form id="campaignForm">
+                    <div class="form-group">
+                        <label>캠페인 ID</label>
+                        <input type="text" name="id" required>
+                    </div>
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input type="text" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>설명</label>
+                        <textarea name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>목표 서명 수</label>
+                        <input type="number" name="targetSignatures" required>
+                    </div>
+                    <div class="form-group">
+                        <label>시작일</label>
+                        <input type="date" name="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>종료일</label>
+                        <input type="date" name="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>의회 표결일</label>
+                        <input type="date" name="voteDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>상태</label>
+                        <select name="status" required>
+                            <option value="active">활성</option>
+                            <option value="paused">일시중지</option>
+                            <option value="completed">완료</option>
+                            <option value="cancelled">취소</option>
+                        </select>
+                    </div>
+                </form>
+            `;
+            showModal('새 캠페인 만들기', body);
+        }
+
+        // 사용자 모달
+        function showUserModal() {
+            const body = `
+                <form id="userForm">
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" name="displayName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>이메일</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>지역</label>
+                        <select name="region">
+                            <option value="">선택</option>
+                            <option value="진안읍">진안읍</option>
+                            <option value="마령면">마령면</option>
+                            <option value="백운면">백운면</option>
+                            <option value="성수면">성수면</option>
+                            <option value="동향면">동향면</option>
+                            <option value="용담면">용담면</option>
+                            <option value="정천면">정천면</option>
+                            <option value="주천면">주천면</option>
+                            <option value="안천면">안천면</option>
+                            <option value="부귀면">부귀면</option>
+                            <option value="상전면">상전면</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>권한</label>
+                        <select name="role">
+                            <option value="user">일반 사용자</option>
+                            <option value="moderator">모더레이터</option>
+                            <option value="admin">관리자</option>
+                        </select>
+                    </div>
+                </form>
+            `;
+            showModal('새 사용자 만들기', body);
+        }
+
+        // 게시글 모달
+        function showPostModal() {
+            const body = `
+                <form id="postForm">
+                    <div class="form-group">
+                        <label>카테고리</label>
+                        <select name="category" required>
+                            <option value="">선택</option>
+                            <option value="공지사항">공지사항</option>
+                            <option value="자유토론">자유토론</option>
+                            <option value="긴급제보">긴급제보</option>
+                            <option value="아이디어">아이디어</option>
+                            <option value="활동인증">활동인증</option>
+                            <option value="Q&A">Q&A</option>
+                            <option value="의회소식">의회소식</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input type="text" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>내용</label>
+                        <textarea name="content" rows="10" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>해시태그 (쉼표로 구분)</label>
+                        <input type="text" name="hashtags" placeholder="예: #목조전망대반대, #445억낭비">
+                    </div>
+                    <div class="form-group">
+                        <label>고정 게시글</label>
+                        <select name="isPinned">
+                            <option value="false">아니오</option>
+                            <option value="true">예</option>
+                        </select>
+                    </div>
+                </form>
+            `;
+            showModal('새 게시글 작성', body);
+        }
+
+        // 투표 모달
+        function showPollModal() {
+            const body = `
+                <form id="pollForm">
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input type="text" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>설명</label>
+                        <textarea name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>투표 유형</label>
+                        <select name="type" required>
+                            <option value="single">단일 선택</option>
+                            <option value="multiple">복수 선택</option>
+                            <option value="discussion">토론형</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>선택지 (한 줄에 하나씩)</label>
+                        <textarea name="options" rows="5" required placeholder="절대 반대&#10;조건부 찬성&#10;적극 찬성"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>마감일시</label>
+                        <input type="datetime-local" name="expiresAt">
+                    </div>
+                </form>
+            `;
+            showModal('새 투표 만들기', body);
+        }
+
+        // 알림 발송 모달
+        function sendNotification() {
+            const body = `
+                <form id="notificationForm">
+                    <div class="form-group">
+                        <label>수신 대상</label>
+                        <select name="target" required>
+                            <option value="all">전체 사용자</option>
+                            <option value="signers">서명 참여자</option>
+                            <option value="active">활성 사용자</option>
+                            <option value="specific">특정 사용자</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>알림 유형</label>
+                        <select name="type" required>
+                            <option value="system">시스템</option>
+                            <option value="news">뉴스</option>
+                            <option value="event">이벤트</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input type="text" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>내용</label>
+                        <textarea name="message" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>푸시 알림 발송</label>
+                        <select name="sendPush">
+                            <option value="false">아니오</option>
+                            <option value="true">예</option>
+                        </select>
+                    </div>
+                </form>
+            `;
+            showModal('알림 발송', body);
+        }
+
+        // 액션 함수들
+        function editCampaign(id) {
+            console.log('캠페인 수정:', id);
+            // 실제 구현시 데이터 로드 후 모달 표시
+        }
+
+        function deleteCampaign(id) {
+            if (confirm('정말로 이 캠페인을 삭제하시겠습니까?')) {
+                console.log('캠페인 삭제:', id);
+                // 실제 삭제 처리
+            }
+        }
+
+        function verifySignature(id) {
+            console.log('서명 확인:', id);
+            // 서명 상태를 verified로 변경
+        }
+
+        function rejectSignature(id) {
+            if (confirm('이 서명을 거부하시겠습니까?')) {
+                console.log('서명 거부:', id);
+                // 서명 상태를 rejected로 변경
+            }
+        }
+
+        function viewSignature(id) {
+            console.log('서명 상세보기:', id);
+            // 서명 상세 정보 모달 표시
+        }
+
+        function exportSignatures() {
+            console.log('서명 데이터 내보내기');
+            // CSV/Excel 파일로 내보내기
+        }
+
+        function filterSignatures() {
+            const region = document.getElementById('regionFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            console.log('필터 적용:', { region, status, startDate, endDate });
+            // 필터링된 데이터 로드
+        }
+
+        function editUser(id) {
+            console.log('사용자 수정:', id);
+            // 사용자 정보 로드 후 모달 표시
+        }
+
+        function banUser(id) {
+            if (confirm('이 사용자를 정지시키시겠습니까?')) {
+                console.log('사용자 정지:', id);
+                // 사용자 상태를 inactive로 변경
+            }
+        }
+
+        function editPost(id) {
+            console.log('게시글 수정:', id);
+            // 게시글 데이터 로드 후 모달 표시
+        }
+
+        function deletePost(id) {
+            if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+                console.log('게시글 삭제:', id);
+                // 게시글 삭제 또는 isActive를 false로 변경
+            }
+        }
+
+        function viewPost(id) {
+            console.log('게시글 보기:', id);
+            // 게시글 상세 보기 페이지로 이동
+        }
+
+        function hidePost(id) {
+            if (confirm('이 게시글을 숨기시겠습니까?')) {
+                console.log('게시글 숨기기:', id);
+                // isActive를 false로 변경
+            }
+        }
+
+        function deleteComment(id) {
+            if (confirm('이 댓글을 삭제하시겠습니까?')) {
+                console.log('댓글 삭제:', id);
+                // 댓글 삭제 또는 isActive를 false로 변경
+            }
+        }
+
+        function replyComment(id) {
+            console.log('댓글 답글:', id);
+            // 답글 작성 모달 표시
+        }
+
+        function viewPollResults(id) {
+            console.log('투표 결과 보기:', id);
+            // 투표 결과 상세 페이지로 이동
+        }
+
+        function editPoll(id) {
+            console.log('투표 수정:', id);
+            // 투표 데이터 로드 후 모달 표시
+        }
+
+        function closePoll(id) {
+            if (confirm('이 투표를 마감하시겠습니까?')) {
+                console.log('투표 마감:', id);
+                // 투표 상태를 inactive로 변경
+            }
+        }
+
+        function loadPollVotes() {
+            const pollId = document.getElementById('pollSelect').value;
+            console.log('투표 결과 로드:', pollId);
+            // 선택된 투표의 결과 데이터 로드
+        }
+
+        function exportVotes() {
+            console.log('투표 데이터 내보내기');
+            // CSV/Excel 파일로 내보내기
+        }
+
+        function deleteNotification(id) {
+            if (confirm('이 알림을 삭제하시겠습니까?')) {
+                console.log('알림 삭제:', id);
+                // 알림 삭제 처리
+            }
+        }
+
+        function loadStatistics() {
+            const period = document.getElementById('periodSelect').value;
+            const startDate = document.getElementById('statStartDate').value;
+            const endDate = document.getElementById('statEndDate').value;
+            
+            console.log('통계 로드:', { period, startDate, endDate });
+            // 통계 데이터 로드 및 차트 업데이트
+        }
+
+        // Firebase 연동 시뮬레이션
+        class FirebaseSimulator {
+            constructor() {
+                this.data = {
+                    campaigns: [],
+                    signatures: [],
+                    users: [],
+                    posts: [],
+                    comments: [],
+                    polls: [],
+                    notifications: []
+                };
+            }
+
+            async loadData(collection) {
+                // 실제로는 Firebase에서 데이터 로드
+                return this.data[collection] || [];
+            }
+
+            async saveData(collection, data) {
+                // 실제로는 Firebase에 데이터 저장
+                console.log(`Saving to ${collection}:`, data);
+            }
+
+            async updateData(collection, id, data) {
+                // 실제로는 Firebase에서 데이터 업데이트
+                console.log(`Updating ${collection}/${id}:`, data);
+            }
+
+            async deleteData(collection, id) {
+                // 실제로는 Firebase에서 데이터 삭제
+                console.log(`Deleting ${collection}/${id}`);
+            }
+        }
+
+        // 전역 Firebase 인스턴스
+        const firebase = new FirebaseSimulator();
+
+        // 폼 제출 처리
+        document.getElementById('modalSubmit').addEventListener('click', () => {
+            const forms = document.querySelectorAll('#modal form');
+            if (forms.length > 0) {
+                const form = forms[0];
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData);
+                
+                console.log('Form submitted:', data);
+                // 실제 저장 처리
+                
+                closeModal();
+                // 페이지 새로고침
+                loadPage(state.currentPage);
+            }
+        });
+
+        // 실시간 업데이트 시뮬레이션
+        setInterval(() => {
+            // 대시보드 페이지일 때만 업데이트
+            if (state.currentPage === 'dashboard') {
+                // 서명 수 업데이트
+                const signatureCount = document.querySelector('.stat-value');
+                if (signatureCount && Math.random() < 0.3) {
+                    const currentValue = parseInt(signatureCount.textContent.replace(',', ''));
+                    signatureCount.textContent = (currentValue + Math.floor(Math.random() * 3) + 1).toLocaleString();
+                }
+            }
+        }, 5000);
+
+        // 차트 정리 함수
+        function destroyCharts() {
+            Object.values(state.charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            state.charts = {};
+        }
+
+        // 페이지 전환시 차트 정리
+        window.addEventListener('beforeunload', destroyCharts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "name": "jinan-campaign",
+  "version": "1.0.0",
+  "private": true,
+  "description": "진안군 목조전망대 반대 캠페인",
+  "workspaces": [
+    "frontend",
+    "admin",
+    "functions"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:admin && npm run install:functions",
+    "install:frontend": "cd frontend && npm install",
+    "install:admin": "cd admin && npm install",
+    "install:functions": "cd functions && npm install",
+    
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:admin": "cd admin && npm start",
+    "dev:functions": "cd functions && npm run serve",
+    
+    "build": "npm run build:frontend && npm run build:admin",
+    "build:frontend": "cd frontend && npm run build",
+    "build:admin": "cd admin && npm run build",
+    
+    "test": "npm run test:frontend && npm run test:admin",
+    "test:frontend": "cd frontend && npm test",
+    "test:admin": "cd admin && npm test",
+    
+    "deploy": "npm run build && firebase deploy",
+    "deploy:frontend": "npm run build:frontend && firebase deploy --only hosting:app",
+    "deploy:admin": "npm run build:admin && firebase deploy --only hosting:admin",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage:rules",
+    "deploy:functions": "firebase deploy --only functions",
+    
+    "serve": "firebase serve",
+    "emulators": "firebase emulators:start"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "firebase-tools": "^12.0.0"
+  }
+}
