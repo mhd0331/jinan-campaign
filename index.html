@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="진안군 목조전망대 445억원 혈세낭비를 막기 위한 시민 캠페인">
+    <meta name="keywords" content="진안군, 목조전망대, 혈세낭비, 시민캠페인, 서명운동">
+    <meta name="author" content="진안군민">
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="진안 캠페인">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jinan-campaign.web.app/">
+    <meta property="og:title" content="진안군 목조전망대 반대 캠페인">
+    <meta property="og:description" content="445억원 혈세낭비를 막아주세요! 지금 서명에 참여하세요.">
+    <meta property="og:image" content="/images/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://jinan-campaign.web.app/">
+    <meta property="twitter:title" content="진안군 목조전망대 반대 캠페인">
+    <meta property="twitter:description" content="445억원 혈세낭비를 막아주세요! 지금 서명에 참여하세요.">
+    <meta property="twitter:image" content="/images/og-image.jpg">
+    
+    <title>진안 캠페인 - 목조전망대 반대</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>진안 캠페인</h2>
+            <p>로딩 중...</p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-logo">
+                    <div class="logo-icon">진</div>
+                    <h1 class="app-title">진안 캠페인</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="notification-btn" class="notification-btn icon-btn" aria-label="알림">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <button id="menu-btn" class="menu-btn icon-btn" aria-label="메뉴">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Urgent Banner -->
+        <div class="urgent-banner" id="urgent-banner">
+            <p>🚨 긴급: 445억원 혈세낭비 막아야 합니다!</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="home">
+                <span class="tab-icon">🏠</span>
+                <span class="tab-label">홈</span>
+            </button>
+            <button class="nav-tab" data-tab="info">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">현황</span>
+            </button>
+            <button class="nav-tab" data-tab="sign">
+                <span class="tab-icon">✍️</span>
+                <span class="tab-label">서명</span>
+            </button>
+            <button class="nav-tab" data-tab="community">
+                <span class="tab-icon">💬</span>
+                <span class="tab-label">커뮤니티</span>
+            </button>
+            <button class="nav-tab" data-tab="poll">
+                <span class="tab-icon">🗳️</span>
+                <span class="tab-label">투표</span>
+            </button>
+        </nav>
+
+        <!-- Tab Contents -->
+        <main class="tab-contents">
+            <!-- Home Tab -->
+            <section id="home-content" class="tab-content active">
+                <!-- D-Day Counter -->
+                <div class="d-day-counter">
+                    <div class="d-day-label">의회 표결까지</div>
+                    <div class="d-day-value" id="dday-value">D-15</div>
+                </div>
+
+                <!-- Signature Counter -->
+                <div class="signature-counter">
+                    <div class="signature-label">현재 서명자 수</div>
+                    <div class="signature-count" id="signature-count">0</div>
+                    <div class="signature-percentage">목표 10,000명 중 <span id="signature-percentage">0%</span></div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="btn btn-primary btn-lg btn-block" onclick="app.showSignForm()">
+                        🖊️ 지금 서명하기
+                    </button>
+                    <div class="action-grid">
+                        <button class="btn action-btn-blue" onclick="app.shareToSocial()">
+                            📢 친구에게 공유
+                        </button>
+                        <button class="btn action-btn-green" onclick="app.getActionIdea()">
+                            💡 행동 아이디어
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Latest News -->
+                <div class="news-section">
+                    <div class="news-header">
+                        <h3 class="news-title">📰 최신 소식</h3>
+                        <span class="badge">NEW</span>
+                    </div>
+                    <div class="news-list" id="news-list">
+                        <!-- 뉴스 아이템이 여기에 동적으로 추가됨 -->
+                    </div>
+                    <button class="btn btn-text w-full">더 보기 →</button>
+                </div>
+
+                <!-- Campaign Stats -->
+                <div class="stats-section">
+                    <h3 class="section-title">📈 캠페인 현황</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card stat-card-blue">
+                            <div class="stat-value" id="media-count">0</div>
+                            <div class="stat-label">언론 보도</div>
+                        </div>
+                        <div class="stat-card stat-card-green">
+                            <div class="stat-value" id="share-count">0</div>
+                            <div class="stat-label">SNS 공유</div>
+                        </div>
+                        <div class="stat-card stat-card-purple">
+                            <div class="stat-value" id="post-count">0</div>
+                            <div class="stat-label">게시글</div>
+                        </div>
+                        <div class="stat-card stat-card-red">
+                            <div class="stat-value" id="opposition-rate">0%</div>
+                            <div class="stat-label">반대 의견</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Tab -->
+            <section id="info-content" class="tab-content">
+                <div class="content-padding">
+                    <h2 class="page-title">💰 사업 현황</h2>
+                    
+                    <!-- Budget Visualization -->
+                    <div class="budget-card">
+                        <div class="budget-header">
+                            <div class="budget-amount">445억원</div>
+                            <div class="budget-label">목조전망대 사업 총 예산</div>
+                        </div>
+                        <div class="budget-breakdown">
+                            <div class="breakdown-title">개인 부담액</div>
+                            <div class="breakdown-amount">178만원</div>
+                            <div class="breakdown-label">진안군민 1인당</div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div class="chart-container">
+                        <h3 class="section-title">📊 과거 실패 사례와 비교</h3>
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="timeline-section">
+                        <h3 class="section-title">⏰ 민주주의 훼손 과정</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker">1</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">군민 의견 수렴 없이 계획 수립</div>
+                                    <div class="timeline-date">2024년 3월</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker">2</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">의회 충분한 검토 없이 통과</div>
+                                    <div class="timeline-date">2024년 6월</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item current">
+                                <div class="timeline-marker">3</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">군민 반대 여론 급상승</div>
+                                    <div class="timeline-date">2024년 12월 (현재)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sign Tab -->
+            <section id="sign-content" class="tab-content">
+                <div class="content-padding">
+                    <h2 class="page-title">✍️ 서명 참여</h2>
+                    
+                    <!-- Current Status -->
+                    <div class="sign-status-card">
+                        <div class="sign-status-count" id="current-signatures">0명</div>
+                        <div class="sign-status-label">현재 서명 참여</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="sign-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="sign-status-percentage">목표 10,000명 중 <span id="sign-percentage">0%</span></div>
+                    </div>
+
+                    <!-- Sign Form -->
+                    <form id="signatureForm" class="sign-form">
+                        <div class="form-group">
+                            <label class="form-label" for="name">이름 *</label>
+                            <input type="text" id="name" name="name" class="form-control" required placeholder="실명을 입력해주세요">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="region">거주지 *</label>
+                            <select id="region" name="region" class="form-control" required>
+                                <option value="">거주 지역을 선택해주세요</option>
+                                <option value="진안읍">진안읍</option>
+                                <option value="마령면">마령면</option>
+                                <option value="백운면">백운면</option>
+                                <option value="성수면">성수면</option>
+                                <option value="동향면">동향면</option>
+                                <option value="용담면">용담면</option>
+                                <option value="정천면">정천면</option>
+                                <option value="주천면">주천면</option>
+                                <option value="안천면">안천면</option>
+                                <option value="부귀면">부귀면</option>
+                                <option value="상전면">상전면</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="phone">연락처 (선택)</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" placeholder="010-0000-0000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="comment">의견 (선택)</label>
+                            <textarea id="comment" name="comment" rows="3" class="form-control form-textarea" placeholder="목조전망대 사업에 대한 의견을 자유롭게 작성해주세요"></textarea>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="isPublic" name="isPublic">
+                                <label for="isPublic">이름을 서명자 목록에 공개합니다</label>
+                            </div>
+                            
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="allowContact" name="allowContact">
+                                <label for="allowContact">캠페인 관련 연락을 받겠습니다</label>
+                            </div>
+                            
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="agreePrivacy" name="agreePrivacy" required>
+                                <label for="agreePrivacy">개인정보 처리방침에 동의합니다 *</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger btn-lg btn-block">
+                            서명 참여하기
+                        </button>
+                    </form>
+
+                    <!-- Recent Signers -->
+                    <div class="recent-signers">
+                        <h3 class="section-title">최근 서명자</h3>
+                        <div class="signers-list" id="recent-signers">
+                            <!-- 최근 서명자가 여기에 동적으로 추가됨 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community Tab -->
+            <section id="community-content" class="tab-content">
+                <div class="content-padding">
+                    <h2 class="page-title">💬 커뮤니티</h2>
+                    
+                    <!-- Community Stats -->
+                    <div class="community-stats">
+                        <div class="community-stats-grid">
+                            <div>
+                                <div class="community-stat-value" id="total-posts">0</div>
+                                <div class="community-stat-label">게시글</div>
+                            </div>
+                            <div>
+                                <div class="community-stat-value" id="total-comments">0</div>
+                                <div class="community-stat-label">댓글</div>
+                            </div>
+                            <div>
+                                <div class="community-stat-value" id="active-users">0</div>
+                                <div class="community-stat-label">활성 사용자</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trending Hashtags -->
+                    <div class="hashtag-section">
+                        <h3 class="section-title">🔥 인기 해시태그</h3>
+                        <div class="hashtag-container" id="trending-hashtags">
+                            <span class="hashtag">#목조전망대반대</span>
+                            <span class="hashtag">#445억낭비</span>
+                            <span class="hashtag">#민주주의</span>
+                            <span class="hashtag">#진안군민</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="category-tabs">
+                        <button class="category-tab active">전체</button>
+                        <button class="category-tab">공지사항</button>
+                        <button class="category-tab">자유토론</button>
+                        <button class="category-tab">긴급제보</button>
+                        <button class="category-tab">아이디어</button>
+                    </div>
+
+                    <!-- Posts List -->
+                    <div class="post-list" id="post-list">
+                        <!-- 게시글이 여기에 동적으로 추가됨 -->
+                    </div>
+                </div>
+                
+                <!-- Write Post Button -->
+                <button class="fab write-fab" onclick="app.showWritePost()">✏️</button>
+            </section>
+
+            <!-- Poll Tab -->
+            <section id="poll-content" class="tab-content">
+                <div class="content-padding">
+                    <h2 class="page-title">🗳️ 설문조사 & 투표</h2>
+                    
+                    <!-- Active Polls -->
+                    <div class="polls-section">
+                        <h3 class="section-title">🔥 진행중인 투표</h3>
+                        
+                        <div class="poll-container" id="active-polls">
+                            <!-- 투표가 여기에 동적으로 추가됨 -->
+                        </div>
+                    </div>
+
+                    <!-- Survey Section -->
+                    <div class="survey-section">
+                        <h3 class="section-title">📊 설문조사</h3>
+                        
+                        <div class="survey-card">
+                            <div class="survey-header">
+                                <h4>진안군 정책 만족도 조사</h4>
+                                <span class="badge badge-orange">신규</span>
+                            </div>
+                            <p class="survey-description">진안군의 주요 정책들에 대한 군민 만족도를 조사합니다. (약 5분 소요)</p>
+                            <div class="survey-stats-grid">
+                                <div>
+                                    <div class="survey-stat-value">0</div>
+                                    <div class="survey-stat-label">참여자</div>
+                                </div>
+                                <div>
+                                    <div class="survey-stat-value">12</div>
+                                    <div class="survey-stat-label">질문</div>
+                                </div>
+                                <div>
+                                    <div class="survey-stat-value">5분</div>
+                                    <div class="survey-stat-label">소요시간</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-warning btn-block">설문 참여하기</button>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="results-section">
+                        <h3 class="section-title">📈 완료된 투표 결과</h3>
+                        <div class="results-list" id="completed-polls">
+                            <!-- 완료된 투표 결과가 여기에 동적으로 추가됨 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fab floating-action" onclick="app.quickShare()">📢</button>
+    </div>
+
+    <!-- Modals -->
+    <!-- Write Post Modal -->
+    <div id="writePostModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">새 글 작성</h3>
+                <button class="modal-close" onclick="app.hideWritePostModal()">×</button>
+            </div>
+            
+            <form id="newPostForm">
+                <div class="form-group">
+                    <select name="category" class="form-control" required>
+                        <option value="">카테고리 선택</option>
+                        <option value="자유토론">자유토론</option>
+                        <option value="긴급제보">긴급제보</option>
+                        <option value="아이디어">아이디어 제안</option>
+                        <option value="활동인증">활동인증</option>
+                        <option value="Q&A">Q&A</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" name="title" placeholder="제목을 입력하세요" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <textarea name="content" rows="4" placeholder="내용을 입력하세요" class="form-control form-textarea" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" name="hashtags" placeholder="#해시태그 (띄어쓰기로 구분)" class="form-control">
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="app.hideWritePostModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">게시</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/js/sw.js')
+                    .then(reg => console.log('Service Worker registered:', reg))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

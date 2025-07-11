@@ -1,0 +1,129 @@
+{
+  "name": "진안군 목조전망대 반대 캠페인",
+  "short_name": "진안 캠페인",
+  "description": "445억원 혈세낭비를 막기 위한 시민 캠페인 앱",
+  "version": "1.0.0",
+  
+  "start_url": "/",
+  "scope": "/",
+  "id": "jinan-campaign-app",
+  
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  
+  "icons": [
+    {
+      "src": "/images/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "/images/screenshots/screenshot-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "홈 화면"
+    },
+    {
+      "src": "/images/screenshots/screenshot-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "서명 화면"
+    }
+  ],
+  
+  "categories": ["government", "news", "politics"],
+  "lang": "ko-KR",
+  
+  "shortcuts": [
+    {
+      "name": "서명하기",
+      "short_name": "서명",
+      "description": "목조전망대 반대 서명에 참여",
+      "url": "/?tab=sign",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-sign.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "최신 소식",
+      "short_name": "소식",
+      "description": "캠페인 최신 소식 확인",
+      "url": "/?tab=home",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-news.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  
+  "prefer_related_applications": false,
+  "related_applications": []
+}
