@@ -1,0 +1,40 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 공통 함수
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // 이미지 업로드
+    match /images/{imageId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && 
+                     request.resource.size < 5 * 1024 * 1024 && // 5MB 제한
+                     request.resource.contentType.matches('image/.*');
+      allow delete: if isAdmin();
+    }
+    
+    // 문서 업로드 (관리자만)
+    match /documents/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin() &&
+                     request.resource.size < 10 * 1024 * 1024; // 10MB 제한
+      allow delete: if isAdmin();
+    }
+    
+    // 사용자 프로필 이미지
+    match /users/{userId}/profile/{imageId} {
+      allow read: if true;
+      allow write: if request.auth.uid == userId &&
+                     request.resource.size < 2 * 1024 * 1024 && // 2MB 제한
+                     request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth.uid == userId || isAdmin();
+    }
+  }
+}

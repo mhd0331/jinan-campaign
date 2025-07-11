@@ -3,16 +3,13 @@
   "short_name": "진안 캠페인",
   "description": "445억원 혈세낭비를 막기 위한 시민 캠페인 앱",
   "version": "1.0.0",
-  
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa&utm_medium=homescreen&utm_campaign=install",
   "scope": "/",
   "id": "jinan-campaign-app",
-  
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#667eea",
   "background_color": "#ffffff",
-  
   "icons": [
     {
       "src": "/images/icons/icon-72.png",
@@ -63,7 +60,6 @@
       "purpose": "any maskable"
     }
   ],
-  
   "screenshots": [
     {
       "src": "/images/screenshots/screenshot-1.png",
@@ -80,10 +76,12 @@
       "label": "서명 화면"
     }
   ],
-  
-  "categories": ["government", "news", "politics"],
+  "categories": [
+    "government",
+    "news",
+    "politics"
+  ],
   "lang": "ko-KR",
-  
   "shortcuts": [
     {
       "name": "서명하기",
@@ -112,7 +110,6 @@
       ]
     }
   ],
-  
   "share_target": {
     "action": "/share",
     "method": "POST",
@@ -123,7 +120,6 @@
       "url": "url"
     }
   },
-  
   "prefer_related_applications": false,
   "related_applications": []
 }

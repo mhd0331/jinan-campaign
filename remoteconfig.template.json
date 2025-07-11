@@ -1,0 +1,54 @@
+{
+  "conditions": [
+    {
+      "name": "Platform iOS",
+      "expression": "device.os == 'ios'",
+      "tagColor": "BLUE"
+    },
+    {
+      "name": "Platform Android",
+      "expression": "device.os == 'android'",
+      "tagColor": "GREEN"
+    }
+  ],
+  "parameters": {
+    "campaign_active": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "캠페인 활성화 상태"
+    },
+    "target_signatures": {
+      "defaultValue": {
+        "value": "10000"
+      },
+      "description": "목표 서명 수"
+    },
+    "urgent_message": {
+      "defaultValue": {
+        "value": "🚨 긴급: 445억원 혈세낭비 막아야 합니다!"
+      },
+      "description": "긴급 메시지 배너"
+    },
+    "maintenance_mode": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "점검 모드"
+    },
+    "minimum_app_version": {
+      "defaultValue": {
+        "value": "1.0.0"
+      },
+      "conditionalValues": {
+        "Platform iOS": {
+          "value": "1.0.0"
+        },
+        "Platform Android": {
+          "value": "1.0.0"
+        }
+      },
+      "description": "최소 앱 버전"
+    }
+  }
+}

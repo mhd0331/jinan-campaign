@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>진안 캠페인 관리자 CMS</title>
+    <link rel="stylesheet" href="/css/admin.css">
     <style>
         :root {
             --primary: #667eea;
@@ -584,6 +585,16 @@
             <p>관리자 패널 로딩 중...</p>
         </div>
     </div>
+
+    <div class="login-container">
+        <h1>관리자 로그인</h1>
+        <form id="loginForm">
+            <input type="email" placeholder="이메일" required>
+            <input type="password" placeholder="비밀번호" required>
+            <button type="submit">로그인</button>
+        </form>
+    </div>
+    <script src="/js/login.js"></script>
 
     <div class="admin-container">
         <!-- Sidebar -->
